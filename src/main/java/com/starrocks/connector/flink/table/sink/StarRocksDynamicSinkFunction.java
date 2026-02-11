@@ -14,6 +14,7 @@
 
 package com.starrocks.connector.flink.table.sink;
 
+import com.alibaba.fastjson.JSONObject;
 import com.google.common.base.Strings;
 import com.starrocks.connector.flink.connection.StarRocksJdbcConnectionOptions;
 import com.starrocks.connector.flink.connection.StarRocksJdbcConnectionProvider;
@@ -114,9 +115,37 @@ public class StarRocksDynamicSinkFunction<T> extends StarRocksDynamicSinkFunctio
                 return;
             }
             // raw data sink
-            sinkManager.writeRecords(sinkOptions.getDatabaseName(), sinkOptions.getTableName(), (String) value);
-            totalInvokeRows.inc(1);
-            totalInvokeRowsTime.inc(System.nanoTime() - start);
+            // 1. 提前强转并缓存，避免重复强转 + 空值前置校验
+            String jsonStr = null;
+            if (value == null) {
+                LOG.warn("raw data sink: value is null, skip parse and write");
+                return; // 或continue，根据外层循环/方法逻辑调整
+            }
+            if (!(value instanceof String)) {
+                LOG.warn("raw data sink: value is not String type, type={}, value={}", value.getClass().getName(), value);
+                return;
+            }
+            jsonStr = (String) value;
+            // 2. 解析JSON：精准捕获异常 + 完整日志
+            JSONObject jsonObject = null;
+            try {
+                jsonObject = JSONObject.parseObject(jsonStr);
+            } catch (com.alibaba.fastjson.JSONException e) { // 仅捕获JSON解析异常，精准定位
+                LOG.warn("raw data sink: json parse failed, value={}", jsonStr, e); // 携带异常堆栈，关键！
+                return;
+            }
+            if(jsonObject != null) {
+                // 新的，库和表从数据中来
+                String sinkStarRocksDatabase = jsonObject.getString(sinkOptions.getSinkStarRocksDatabase());
+                String sinkStarRocksTable = jsonObject.getString(sinkOptions.getSinkStarRocksTable());
+                if(sinkStarRocksDatabase != null && !sinkStarRocksDatabase.isEmpty() && sinkStarRocksTable != null && !sinkStarRocksTable.isEmpty()) {
+                    sinkManager.writeRecords(sinkStarRocksDatabase, sinkStarRocksTable, (String) value);
+                    totalInvokeRows.inc(1);
+                    totalInvokeRowsTime.inc(System.nanoTime() - start);
+                };
+
+            }
+
             return;
         }
         if (value instanceof RowData) {

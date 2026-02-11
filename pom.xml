@@ -638,6 +638,26 @@ limitations under the License.
                 <enabled>true</enabled>
             </snapshots>
         </repository>
+        <!-- 阿里云仓库 -->
+        <repository>
+            <id>aliyun-public</id>
+            <name>Aliyun Maven</name>
+            <url>https://maven.aliyun.com/repository/public</url>
+        </repository>
+
+        <!-- Confluent 仓库（关键） -->
+        <repository>
+            <id>confluent</id>
+            <name>Confluent</name>
+            <url>https://packages.confluent.io/maven/</url>
+        </repository>
+
+        <!-- Maven 中央仓库 -->
+        <repository>
+            <id>central</id>
+            <name>Maven Central</name>
+            <url>https://repo.maven.apache.org/maven2</url>
+        </repository>
     </repositories>
 
     <distributionManagement>

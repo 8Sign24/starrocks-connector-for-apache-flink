@@ -69,6 +69,12 @@ public class StarRocksSinkOptions implements Serializable {
             .stringType().noDefaultValue().withDescription("Database name of the stream load.");
     public static final ConfigOption<String> TABLE_NAME = ConfigOptions.key("table-name")
             .stringType().noDefaultValue().withDescription("Table name of the stream load.");
+    public static final ConfigOption<String> WAREHOUSE = ConfigOptions.key("warehouse")
+            .stringType().noDefaultValue().withDescription("warehouse name of the stream load. - custom");
+    public static final ConfigOption<String> SINK_STAR_ROCKS_DATABASE = ConfigOptions.key("sink-star-rocks-database")
+            .stringType().noDefaultValue().withDescription("Database name of the stream load. - custom");
+    public static final ConfigOption<String> SINK_STAR_ROCKS_TABLE = ConfigOptions.key("sink-star-rocks-table")
+            .stringType().noDefaultValue().withDescription("Table name of the stream load. - custom");
     public static final ConfigOption<String> USERNAME = ConfigOptions.key("username")
             .stringType().noDefaultValue().withDescription("StarRocks user name.");
     public static final ConfigOption<String> PASSWORD = ConfigOptions.key("password")
@@ -236,6 +242,15 @@ public class StarRocksSinkOptions implements Serializable {
 
     public String getTableName() {
         return tableOptions.get(TABLE_NAME);
+    }
+    public String getWarehouse() {
+        return tableOptions.get(WAREHOUSE);
+    }
+    public String getSinkStarRocksDatabase() {
+        return tableOptions.get(SINK_STAR_ROCKS_DATABASE);
+    }
+    public String getSinkStarRocksTable() {
+        return tableOptions.get(SINK_STAR_ROCKS_TABLE);
     }
 
     public String getUsername() {
